@@ -605,8 +605,8 @@ main {
 
 .about-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 4rem;
+    grid-template-columns: 1fr auto; /* Give text more space, avatar takes minimal space */
+    gap: 8rem; /* Increased gap to create whitespace */
     align-items: center;
 }
 
@@ -715,7 +715,6 @@ footer {
     backdrop-filter: blur(4px);
     transition: opacity 0.4s ease;
     z-index: 2;
-    pointer-events: none;
 }
 
 .spoiler-overlay span {

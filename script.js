@@ -22,9 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             
             let coverImage = project.cover;
-            if (isMotionProject && isMobile) {
+            if (isMotionProject && isMobile && project.cover && !project.cover.includes('placehold.co')) {
                 // For mobile, use webp format for motion project cover
-                coverImage = project.cover.replace(/\.(mp4|webm)$/i, '.webp');
+                coverImage = project.cover.replace(/\.(mp4|webm|jpg|jpeg|png|gif)$/i, '.webp');
             }
             
             card.innerHTML = `
@@ -83,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 // For mobile, use webp format if available
                                 if (isMobile) {
                                     const webpPath = img.replace(/\.(mp4|webm)$/i, '.webp');
-                                    mediaElement = `<img src="${webpPath}" alt="项目视频预览" style="width:100%; display:block;">`;
+                                    // Store original video path in data attribute
+                                    mediaElement = `<img src="${webpPath}" data-video-src="${img}" alt="项目视频预览" style="width:100%; display:block;">`;
                                 } else {
                                     // For desktop, use original video
                                     mediaElement = `<video src="${img}" autoplay loop muted playsinline style="width:100%; display:block;"></video>`;
@@ -155,9 +156,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         newVideo.style.maxHeight = '90%';
                         lightboxContent.appendChild(newVideo);
                     } else if (img) {
-                        const newImg = document.createElement('img');
-                        newImg.src = img.src;
-                        lightboxContent.appendChild(newImg);
+                        // Check if it's a mobile placeholder for video
+                        const videoSrc = img.getAttribute('data-video-src');
+                        if (videoSrc) {
+                            const newVideo = document.createElement('video');
+                            newVideo.src = videoSrc;
+                            newVideo.controls = true;
+                            newVideo.autoplay = true;
+                            newVideo.style.maxWidth = '90%';
+                            newVideo.style.maxHeight = '90%';
+                            lightboxContent.appendChild(newVideo);
+                        } else {
+                            const newImg = document.createElement('img');
+                            newImg.src = img.src;
+                            lightboxContent.appendChild(newImg);
+                        }
                     }
                     
                     document.body.appendChild(lightbox); // Re-append if removed
@@ -324,4 +337,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // 7. Email Spoiler Interaction (Using Event Delegation for Dynamic Content)
+    document.body.addEventListener('click', function(e) {
+        const emailWrapper = e.target.closest('.email-spoiler-wrapper');
+        if (emailWrapper) {
+            // Prevent default if it's the first click to reveal
+            if (!emailWrapper.classList.contains('revealed')) {
+                e.preventDefault(); // Stop link navigation if user clicked directly on link
+                e.stopPropagation();
+                
+                emailWrapper.classList.add('revealed');
+                const emailLink = emailWrapper.querySelector('.contact-email');
+                if (emailLink) {
+                    emailLink.classList.remove('spoiler-hidden');
+                }
+            }
+            // If already revealed, let the click pass through to the mailto link
+        }
+    });
 });
